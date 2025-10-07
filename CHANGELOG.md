@@ -1,3 +1,10 @@
+# 1.0.0 (2025-10-07)
+
+
+### Performance Improvements
+
+* **Initialized rep:** Initialized rep ([78f30fa](https://github.com/leocodeio/minichat/commit/78f30fa6da00c38b09f2a5668a433dd4253822c9))
+
 # [1.2.0](https://github.com/leocodeio/minichat/compare/v1.1.4...v1.2.0) (2025-10-07)
 
 ### Features
