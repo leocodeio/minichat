@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/leocodeio/minichat/compare/v1.0.2...v1.0.3) (2025-10-08)
+
+
+### Performance Improvements
+
+* **Have to checkpoint now:** Have to checkpoint now ([afeb78b](https://github.com/leocodeio/minichat/commit/afeb78bb5836fd00ad19c690d474b7afc8a4a1cb))
+
 ## [1.0.2](https://github.com/leocodeio/minichat/compare/v1.0.1...v1.0.2) (2025-10-08)
 
 
