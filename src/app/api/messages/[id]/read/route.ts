@@ -5,7 +5,7 @@ import { prisma } from "@/server/services/auth/db.server";
 // POST /api/messages/:id/read - Mark as read
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession(request);
@@ -13,7 +13,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if message exists and user is a participant in the chat
     const message = await prisma.message.findFirst({

@@ -35,7 +35,7 @@ export function ProfileDisplay({ user, onEdit, onRegenerateCode }: ProfileDispla
     try {
       await navigator.clipboard.writeText(text);
       toast.success("Copied to clipboard!");
-    } catch (error) {
+      } catch (_error) {
       toast.error("Failed to copy to clipboard");
     }
   };

@@ -7,6 +7,7 @@ import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Toaster } from "sonner";
+import { WebSocketProvider } from "@/hooks/use-websocket";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,8 +52,10 @@ export default async function LocaleLayout({
             disableTransitionOnChange
             themes={["light", "dark"]}
           >
-            {children}
-            <Toaster />
+            <WebSocketProvider>
+              {children}
+              <Toaster />
+            </WebSocketProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

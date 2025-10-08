@@ -3,14 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import { useBetterAuthSignout, getSession } from "@/server/services/auth/auth-client";
-import { LogOut, Menu } from "lucide-react";
-import { toast } from "sonner";
+import { getSession } from "@/server/services/auth/auth-client";
+import { useBetterAuthSignout } from "@/server/services/auth/auth-client";
 import { ChatList } from "@/components/chats/chat-list";
-import { ChatHeader } from "@/components/chat/chat-header";
-import { ChatBody } from "@/components/chat/chat-body";
-import { ChatFooter } from "@/components/chat/chat-footer";
+import { Button } from "@/components/ui/button";
+import { Menu, LogOut } from "lucide-react";
+import { toast } from "sonner";
 import { EmptyChat } from "@/components/chat/empty-chat";
 
 interface User {
@@ -20,69 +18,12 @@ interface User {
   image?: string;
 }
 
-interface ChatParticipant {
-  user: {
-    id: string;
-    name: string;
-    image?: string;
-    uniqueCode?: string;
-  };
-}
-
-interface LastMessage {
-  content: string;
-  sender: {
-    id: string;
-    name: string;
-    image?: string;
-  };
-  createdAt: string;
-}
-
-interface Chat {
-  id: string;
-  isGroup: boolean;
-  name?: string;
-  description?: string;
-  lastMessageAt?: string;
-  participants: ChatParticipant[];
-  messages: LastMessage[];
-}
-
-interface Message {
-  id: string;
-  content: string;
-  senderId: string;
-  chatId: string;
-  status: string;
-  type: string;
-  createdAt: string;
-  updatedAt: string;
-  sender: {
-    id: string;
-    name: string;
-    image?: string;
-  };
-  replyTo?: {
-    id: string;
-    content: string;
-    sender: {
-      name: string;
-    };
-  };
-}
-
 export default function DashboardPage() {
   const t = useTranslations("Dashboard");
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
-  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
-  const [chatMessages, setChatMessages] = useState<Message[]>([]);
-  const [messagesLoading, setMessagesLoading] = useState(false);
-  const [replyTo, setReplyTo] = useState<Message | null>(null);
   const signout = useBetterAuthSignout();
 
   useEffect(() => {
@@ -111,60 +52,12 @@ export default function DashboardPage() {
     fetchSession();
   }, [router]);
 
-  const handleChatSelect = async (chatId: string) => {
-    setSelectedChatId(chatId);
-    setMessagesLoading(true);
-
-    try {
-      // Fetch chat details
-      const chatResponse = await fetch(`/api/chats/${chatId}`);
-      if (chatResponse.ok) {
-        const chatData = await chatResponse.json();
-        setSelectedChat(chatData.chat);
-      }
-
-      // Fetch messages
-      const messagesResponse = await fetch(`/api/chats/${chatId}/messages`);
-      if (messagesResponse.ok) {
-        const messagesData = await messagesResponse.json();
-        setChatMessages(messagesData.messages || []);
-      }
-    } catch (error) {
-      console.error("Failed to load chat:", error);
-      toast.error("Failed to load chat");
-    } finally {
-      setMessagesLoading(false);
-    }
+  const handleChatSelect = (chatId: string) => {
+    router.push(`/dashboard/chat/${chatId}`);
   };
 
-  const handleSendMessage = async (content: string, replyToId?: string) => {
-    if (!selectedChatId || !user) return;
-
-    try {
-      const response = await fetch("/api/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          chatId: selectedChatId,
-          content,
-          replyToId,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Add the new message to the list
-        setChatMessages(prev => [...prev, data.message]);
-        setReplyTo(null);
-      } else {
-        toast.error("Failed to send message");
-      }
-    } catch (error) {
-      console.error("Error sending message:", error);
-      toast.error("Failed to send message");
-    }
+  const handleChatCreated = (chatId: string) => {
+    router.push(`/dashboard/chat/${chatId}`);
   };
 
   if (loading) {
@@ -203,8 +96,8 @@ export default function DashboardPage() {
 
           {/* Chat List */}
           <ChatList
-            selectedChatId={selectedChatId}
             onChatSelect={handleChatSelect}
+            onChatCreated={handleChatCreated}
           />
         </div>
       </div>
@@ -220,35 +113,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {selectedChat ? (
-          <>
-            {/* Chat Header */}
-            <ChatHeader
-              chat={selectedChat}
-              isOnline={false} // TODO: Implement online status
-              lastSeen="2 hours ago" // TODO: Implement last seen
-            />
-
-            {/* Chat Body */}
-            <ChatBody
-              messages={chatMessages}
-              currentUserId={user.id}
-              isLoading={messagesLoading}
-              hasMore={false} // TODO: Implement pagination
-              onLoadMore={() => {}} // TODO: Implement load more
-              typingUsers={[]} // TODO: Implement typing indicators
-            />
-
-            {/* Chat Footer */}
-            <ChatFooter
-              onSendMessage={handleSendMessage}
-              replyTo={replyTo}
-              onCancelReply={() => setReplyTo(null)}
-            />
-          </>
-        ) : (
-          <EmptyChat />
-        )}
+        <EmptyChat />
       </div>
     </div>
   );

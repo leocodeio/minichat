@@ -51,7 +51,7 @@ export function AddContactDialog({ open, onOpenChange, onContactAdded }: AddCont
     }
   };
 
-  const handleAddContact = async (userId: string) => {
+  const handleAddContact = async (_userId: string) => {
     setIsLoading(true);
     try {
       const response = await fetch("/api/contacts/add", {

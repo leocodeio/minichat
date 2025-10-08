@@ -41,6 +41,7 @@ interface MessageListProps {
   hasMore?: boolean;
   onLoadMore?: () => void;
   typingUsers?: string[];
+  onMessageRead?: (messageId: string) => void;
   className?: string;
 }
 
@@ -51,10 +52,12 @@ export function MessageList({
   hasMore = false,
   onLoadMore,
   typingUsers = [],
+  onMessageRead,
   className
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const messageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -62,6 +65,41 @@ export function MessageList({
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  // Intersection observer for marking messages as read
+  useEffect(() => {
+    if (!onMessageRead) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const messageId = entry.target.getAttribute('data-message-id');
+            if (messageId) {
+              // Find the message to check if it's not from current user and not already read
+              const message = messages.find(m => m.id === messageId);
+              if (message && message.senderId !== currentUserId && message.status !== 'read') {
+                onMessageRead(messageId);
+              }
+            }
+          }
+        });
+      },
+      {
+        root: messagesContainerRef.current,
+        threshold: 0.5, // Message is considered read when 50% visible
+      }
+    );
+
+    // Observe all message elements
+    messageRefs.current.forEach((element) => {
+      observer.observe(element);
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [messages, currentUserId, onMessageRead]);
 
   // Group messages by date and sender for better UI
   const groupedMessages = messages.reduce((groups: GroupedMessage[], message, index) => {
@@ -118,7 +156,17 @@ export function MessageList({
       )}
 
       {groupedMessages.map((message: GroupedMessage) => (
-        <div key={message.id}>
+        <div
+          key={message.id}
+          data-message-id={message.id}
+          ref={(el) => {
+            if (el) {
+              messageRefs.current.set(message.id, el);
+            } else {
+              messageRefs.current.delete(message.id);
+            }
+          }}
+        >
           {message.isNewDay && (
             <div className="flex justify-center my-4">
               <div className="bg-muted px-3 py-1 rounded-full text-xs text-muted-foreground">

@@ -6,15 +6,20 @@ interface TypingIndicatorProps {
 }
 
 export function TypingIndicator({ users, className }: TypingIndicatorProps) {
-  if (users.length === 0) return null;
+  // Filter out any invalid/empty names
+  const validUsers = users.filter(user => user && user.trim());
+
+  if (validUsers.length === 0) return null;
+
+  if (validUsers.length === 0) return null;
 
   const getTypingText = () => {
-    if (users.length === 1) {
-      return `${users[0]} is typing...`;
-    } else if (users.length === 2) {
-      return `${users[0]} and ${users[1]} are typing...`;
+    if (validUsers.length === 1) {
+      return `${validUsers[0]} is typing...`;
+    } else if (validUsers.length === 2) {
+      return `${validUsers[0]} and ${validUsers[1]} are typing...`;
     } else {
-      return `${users[0]} and ${users.length - 1} others are typing...`;
+      return `${validUsers[0]} and ${validUsers.length - 1} others are typing...`;
     }
   };
 

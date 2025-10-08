@@ -5,7 +5,7 @@ import { prisma } from "@/server/services/auth/db.server";
 // GET /api/chats/:id - Get specific chat details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession(request);
@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const chat = await prisma.chat.findFirst({
       where: {
@@ -69,7 +69,7 @@ export async function GET(
 // DELETE /api/chats/:id - Delete chat
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession(request);
@@ -77,7 +77,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if chat exists and user is a participant
     const chat = await prisma.chat.findFirst({

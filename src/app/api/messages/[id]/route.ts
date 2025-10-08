@@ -5,7 +5,7 @@ import { prisma } from "@/server/services/auth/db.server";
 // GET /api/messages/:id - Get specific message
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession(request);
@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const message = await prisma.message.findFirst({
       where: {
@@ -63,7 +63,7 @@ export async function GET(
 // PUT /api/messages/:id - Edit message
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession(request);
@@ -71,7 +71,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { content } = body;
 
@@ -115,7 +115,7 @@ export async function PUT(
 // DELETE /api/messages/:id - Delete message
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession(request);
@@ -123,7 +123,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if message exists and user is the sender
     const message = await prisma.message.findFirst({

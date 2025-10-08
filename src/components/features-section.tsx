@@ -3,16 +3,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Zap,
   Shield,
+  Globe,
+  Rocket,
+  Zap,
   Code,
   Database,
-  Smartphone,
-  Globe,
-  Users,
-  BarChart3,
-  Lock,
-  Rocket
+  Smartphone
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 

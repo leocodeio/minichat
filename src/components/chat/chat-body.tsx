@@ -32,6 +32,7 @@ interface ChatBodyProps {
   hasMore?: boolean;
   onLoadMore?: () => void;
   typingUsers?: string[];
+  onMessageRead?: (messageId: string) => void;
   className?: string;
 }
 
@@ -42,6 +43,7 @@ export function ChatBody({
   hasMore = false,
   onLoadMore,
   typingUsers = [],
+  onMessageRead,
   className
 }: ChatBodyProps) {
   return (
@@ -53,6 +55,7 @@ export function ChatBody({
         hasMore={hasMore}
         onLoadMore={onLoadMore}
         typingUsers={typingUsers}
+        onMessageRead={onMessageRead}
       />
     </div>
   );

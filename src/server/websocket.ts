@@ -1,7 +1,6 @@
 import { Server as HTTPServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
-import { auth } from "./services/auth/db.server";
-import { prisma } from "./services/auth/db.server";
+import { auth, prisma } from "./services/auth/db.server";
 
 export function initializeSocketIO(httpServer: HTTPServer) {
   const io = new SocketIOServer(httpServer, {
@@ -14,24 +13,31 @@ export function initializeSocketIO(httpServer: HTTPServer) {
   // Authentication middleware for Socket.io
   io.use(async (socket, next) => {
     try {
-      const token = socket.handshake.auth.token || socket.handshake.headers.authorization;
-      if (!token) {
-        return next(new Error("Authentication token required"));
+      // Try to get session from cookies first (Better Auth default)
+      const cookieHeader = socket.handshake.headers.cookie;
+      if (!cookieHeader) {
+        return next(new Error("Authentication required"));
       }
 
-      // For now, we'll skip token verification and use a simple check
-      // In a real implementation, you'd verify the token properly
-      if (typeof token === "string" && token.startsWith("Bearer ")) {
-        const actualToken = token.split(" ")[1];
-        // Here you would verify the token with Better Auth
-        // For simplicity, we'll assume it's valid for now
-        socket.data.userId = "temp-user-id"; // Replace with actual user ID from token
-      } else {
-        return next(new Error("Invalid token format"));
+      // Create a proper Headers object
+      const headers = new Headers();
+      headers.set('cookie', cookieHeader);
+
+      // Create a mock request object for Better Auth session verification
+      const mockRequest = { headers };
+
+      // Verify the session with Better Auth
+      const session = await auth.api.getSession(mockRequest);
+
+      if (!session?.user) {
+        return next(new Error("Invalid session"));
       }
 
+      socket.data.userId = session.user.id;
+      socket.data.user = session.user;
       next();
     } catch (error) {
+      console.error("Socket authentication error:", error);
       next(new Error("Authentication failed"));
     }
   });
@@ -41,6 +47,9 @@ export function initializeSocketIO(httpServer: HTTPServer) {
 
     // Join user's personal room
     socket.join(`user:${socket.data.userId}`);
+
+    // Broadcast user online status
+    socket.broadcast.emit("user-online", { userId: socket.data.userId });
 
     // Handle joining chat rooms
     socket.on("join-chat", (chatId: string) => {
@@ -58,6 +67,7 @@ export function initializeSocketIO(httpServer: HTTPServer) {
     socket.on("typing", (data: { chatId: string; isTyping: boolean }) => {
       socket.to(`chat:${data.chatId}`).emit("user-typing", {
         userId: socket.data.userId,
+        chatId: data.chatId,
         isTyping: data.isTyping,
       });
     });
@@ -166,6 +176,8 @@ export function initializeSocketIO(httpServer: HTTPServer) {
     // Handle user disconnect
     socket.on("disconnect", () => {
       console.log(`User ${socket.data.userId} disconnected`);
+      // Broadcast user offline status
+      socket.broadcast.emit("user-offline", { userId: socket.data.userId });
     });
   });
 

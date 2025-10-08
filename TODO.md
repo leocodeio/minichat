@@ -225,7 +225,7 @@
 
 ---
 
-## Phase 6: File Sharing
+## Phase 6: File Sharing ( no need to implement )
 
 ### 6.1 File Upload Infrastructure
 - [ ] Setup file storage
@@ -349,7 +349,7 @@
 
 ---
 
-## Phase 10: Testing & Deployment
+## Phase 10: Testing & Deployment ( no need to implement )
 
 ### 10.1 Testing
 - [ ] Write tests
@@ -386,7 +386,7 @@
 
 ---
 
-## Phase 11: Future Enhancements (Optional)
+## Phase 11: Future Enhancements (Optional) (no need to implement)
 
 ### 11.1 Group Chats
 - [ ] Implement group functionality
@@ -423,3 +423,8 @@
 - Ensure mobile responsiveness throughout
 - Test real-time features thoroughly
 - Consider scalability from the start
+- Do not implement the features that are marked not to be implemented.
+
+## Feedbacks
+
+- [ ] Improvise sidebar open close approach in dashboard for all screen sizes

@@ -5,7 +5,7 @@ import { prisma } from "@/server/services/auth/db.server";
 // PUT /api/contacts/:id - Update contact (nickname)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession(request);
@@ -13,7 +13,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { nickname } = body;
 
@@ -55,7 +55,7 @@ export async function PUT(
 // DELETE /api/contacts/:id - Remove contact
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession(request);
@@ -63,7 +63,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if contact exists and belongs to user
     const contact = await prisma.contact.findFirst({

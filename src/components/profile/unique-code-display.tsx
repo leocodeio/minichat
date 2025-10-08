@@ -19,7 +19,7 @@ export function UniqueCodeDisplay({ uniqueCode, onRegenerate, isLoading }: Uniqu
     try {
       await navigator.clipboard.writeText(uniqueCode);
       toast.success("Unique code copied to clipboard!");
-    } catch (error) {
+      } catch (_error) {
       toast.error("Failed to copy to clipboard");
     }
   };

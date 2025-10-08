@@ -37,10 +37,11 @@ interface Chat {
 interface ChatListProps {
   selectedChatId?: string;
   onChatSelect?: (chatId: string) => void;
+  onChatCreated?: (chatId: string) => void;
   className?: string;
 }
 
-export function ChatList({ selectedChatId, onChatSelect, className }: ChatListProps) {
+export function ChatList({ selectedChatId, onChatSelect, onChatCreated, className }: ChatListProps) {
   const [chats, setChats] = useState<Chat[]>([]);
   const [filteredChats, setFilteredChats] = useState<Chat[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -87,11 +88,7 @@ export function ChatList({ selectedChatId, onChatSelect, className }: ChatListPr
     }
   };
 
-  const handleChatCreated = (chatId: string) => {
-    // Refresh chats and select the new chat
-    fetchChats();
-    onChatSelect?.(chatId);
-  };
+
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
@@ -102,7 +99,7 @@ export function ChatList({ selectedChatId, onChatSelect, className }: ChatListPr
       <ChatListHeader
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
-        onChatCreated={handleChatCreated}
+        onChatCreated={onChatCreated}
       />
 
       <div className="flex-1 overflow-y-auto">

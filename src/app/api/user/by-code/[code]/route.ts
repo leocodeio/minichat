@@ -4,10 +4,10 @@ import { prisma } from "@/server/services/auth/db.server";
 // GET /api/user/by-code/:code - Find user by unique code
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   try {
-    const { code } = params;
+    const { code } = await params;
 
     if (!code) {
       return NextResponse.json({ error: "Code is required" }, { status: 400 });

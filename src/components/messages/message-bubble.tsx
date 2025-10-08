@@ -33,15 +33,14 @@ interface MessageBubbleProps {
   isOwn: boolean;
   showAvatar?: boolean;
   showTimestamp?: boolean;
-  onReply?: (messageId: string) => void;
+
 }
 
 export function MessageBubble({
   message,
   isOwn,
   showAvatar = true,
-  showTimestamp = true,
-  onReply
+  showTimestamp = true
 }: MessageBubbleProps) {
   return (
     <div className={cn("flex gap-3 mb-4", isOwn && "flex-row-reverse")}>

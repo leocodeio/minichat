@@ -1,9 +1,8 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreVertical, Phone, Video, Search } from "lucide-react";
+import { Phone, Video, Search } from "lucide-react";
 import { ChatActions } from "./chat-actions";
 
 interface ChatParticipant {

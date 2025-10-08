@@ -35,7 +35,7 @@ export default async function middleware(request: NextRequest) {
   }
 
   if (!session && isDashboard) {
-    return NextResponse.redirect(new URL(`/${lang}/login`, request.url));
+    return NextResponse.redirect(new URL(`/${lang}`, request.url));
   }
 
   return i18nResponse ?? NextResponse.next();

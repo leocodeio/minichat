@@ -51,7 +51,7 @@ export function ProfilePictureUpload({ currentImage, userName, onUpload }: Profi
       await onUpload(file);
       toast.success("Profile picture updated successfully!");
       setPreview(null);
-    } catch (error) {
+      } catch (_error) {
       toast.error("Failed to upload profile picture");
       setPreview(null);
     } finally {

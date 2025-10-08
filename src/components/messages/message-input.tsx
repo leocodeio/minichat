@@ -10,6 +10,8 @@ interface MessageInputProps {
   onSendMessage: (content: string) => void;
   disabled?: boolean;
   placeholder?: string;
+  onTypingStart?: () => void;
+  onTypingStop?: () => void;
   className?: string;
 }
 
@@ -17,16 +19,21 @@ export function MessageInput({
   onSendMessage,
   disabled = false,
   placeholder = "Type a message...",
+  onTypingStart,
+  onTypingStop,
   className
 }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (message.trim() && !disabled) {
       onSendMessage(message.trim());
       setMessage("");
+      // Stop typing indicator
+      if (onTypingStop) onTypingStop();
       // Reset textarea height
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
@@ -37,12 +44,31 @@ export function MessageInput({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e);
+      handleSubmit();
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
+    const newMessage = e.target.value;
+    setMessage(newMessage);
+
+    // Handle typing indicators
+    if (newMessage.trim() && onTypingStart) {
+      onTypingStart();
+      // Clear existing timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      // Set timeout to stop typing after 2 seconds of inactivity
+      typingTimeoutRef.current = setTimeout(() => {
+        if (onTypingStop) onTypingStop();
+      }, 2000);
+    } else if (!newMessage.trim() && onTypingStop) {
+      onTypingStop();
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    }
 
     // Auto-resize textarea
     if (textareaRef.current) {
