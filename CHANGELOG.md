@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/leocodeio/minichat/compare/v1.0.0...v1.0.1) (2025-10-08)
+
+
+### Performance Improvements
+
+* **dry run by suupernova:** dry run by suupernova ([41c7096](https://github.com/leocodeio/minichat/commit/41c7096e76e82bd94411666eb8d0e4b4078187b3))
+
 # 1.0.0 (2025-10-07)
 
 
