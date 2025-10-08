@@ -129,48 +129,48 @@
    - [x] BlockContactConfirmDialog
 
 ### 3.3 Chat List Components
-- [ ] Create chat list UI
-  - [ ] ChatList component (sidebar)
-  - [ ] ChatListItem component
-  - [ ] ChatSearch component
-  - [ ] NewChatDialog component
-  - [ ] ChatListHeader with actions
-  - [ ] Unread message badge
-  - [ ] Last message preview
-  - [ ] Timestamp display
+- [x] Create chat list UI
+  - [x] ChatList component (sidebar)
+  - [x] ChatListItem component
+  - [x] ChatSearch component
+  - [x] NewChatDialog component
+  - [x] ChatListHeader with actions
+  - [x] Unread message badge
+  - [x] Last message preview
+  - [x] Timestamp display
 
 ### 3.4 Message Components
-- [ ] Create messaging UI
-  - [ ] MessageList component (virtualized)
-  - [ ] MessageBubble component (sent/received)
-  - [ ] MessageInput component
-  - [ ] TypingIndicator component
-  - [ ] MessageStatus component (checkmarks)
-  - [ ] MessageTimestamp component
-  - [ ] MessageContextMenu (edit, delete, reply)
-  - [ ] ReplyPreview component
-  - [ ] EmojiPicker component
+- [x] Create messaging UI
+  - [x] MessageList component (virtualized)
+  - [x] MessageBubble component (sent/received)
+  - [x] MessageInput component
+  - [x] TypingIndicator component
+  - [x] MessageStatus component (checkmarks)
+  - [x] MessageTimestamp component
+  - [x] MessageContextMenu (edit, delete, reply)
+  - [x] ReplyPreview component
+  - [x] EmojiPicker component
 
 ### 3.5 Chat Window Components
-- [ ] Create chat window layout
-  - [ ] ChatHeader component (contact name, status)
-  - [ ] ChatBody component (message area)
-  - [ ] ChatFooter component (input area)
-  - [ ] ChatActions dropdown menu
-  - [ ] EmptyChat placeholder
-  - [ ] LoadingMessages skeleton
+- [x] Create chat window layout
+  - [x] ChatHeader component (contact name, status)
+  - [x] ChatBody component (message area)
+  - [x] ChatFooter component (input area)
+  - [x] ChatActions dropdown menu
+  - [x] EmptyChat placeholder
+  - [x] LoadingMessages skeleton
 
 ---
 
 ## Phase 4: Pages & Layouts
 
 ### 4.1 Update Dashboard
-- [ ] Transform dashboard into chat layout
-  - [ ] Create two-column layout (sidebar + main)
-  - [ ] Add responsive mobile layout
-  - [ ] Implement chat list sidebar
-  - [ ] Implement main chat area
-  - [ ] Add empty state when no chat selected
+- [x] Transform dashboard into chat layout
+  - [x] Create two-column layout (sidebar + main)
+  - [x] Add responsive mobile layout
+  - [x] Implement chat list sidebar
+  - [x] Implement main chat area
+  - [x] Add empty state when no chat selected
 
 ### 4.2 Profile Pages
 - [ ] Create profile pages

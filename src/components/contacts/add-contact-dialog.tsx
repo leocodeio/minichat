@@ -8,6 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Search } from "lucide-react";
 import { toast } from "sonner";
 
+interface SearchResult {
+  id: string;
+  name: string;
+  email: string;
+  image?: string;
+  uniqueCode?: string;
+}
+
 interface AddContactDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -17,7 +25,7 @@ interface AddContactDialogProps {
 export function AddContactDialog({ open, onOpenChange, onContactAdded }: AddContactDialogProps) {
   const [uniqueCode, setUniqueCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
   const handleSearch = async () => {
     if (!uniqueCode.trim()) {

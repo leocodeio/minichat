@@ -4,10 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useBetterAuthSignout, getSession } from "@/server/services/auth/auth-client";
-import { User, Settings, LogOut } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import { toast } from "sonner";
+import { ChatList } from "@/components/chats/chat-list";
+import { ChatHeader } from "@/components/chat/chat-header";
+import { ChatBody } from "@/components/chat/chat-body";
+import { ChatFooter } from "@/components/chat/chat-footer";
+import { EmptyChat } from "@/components/chat/empty-chat";
 
 interface User {
   id: string;
@@ -16,11 +20,69 @@ interface User {
   image?: string;
 }
 
+interface ChatParticipant {
+  user: {
+    id: string;
+    name: string;
+    image?: string;
+    uniqueCode?: string;
+  };
+}
+
+interface LastMessage {
+  content: string;
+  sender: {
+    id: string;
+    name: string;
+    image?: string;
+  };
+  createdAt: string;
+}
+
+interface Chat {
+  id: string;
+  isGroup: boolean;
+  name?: string;
+  description?: string;
+  lastMessageAt?: string;
+  participants: ChatParticipant[];
+  messages: LastMessage[];
+}
+
+interface Message {
+  id: string;
+  content: string;
+  senderId: string;
+  chatId: string;
+  status: string;
+  type: string;
+  createdAt: string;
+  updatedAt: string;
+  sender: {
+    id: string;
+    name: string;
+    image?: string;
+  };
+  replyTo?: {
+    id: string;
+    content: string;
+    sender: {
+      name: string;
+    };
+  };
+}
+
 export default function DashboardPage() {
   const t = useTranslations("Dashboard");
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+  const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const [replyTo, setReplyTo] = useState<Message | null>(null);
   const signout = useBetterAuthSignout();
 
   useEffect(() => {
@@ -49,6 +111,62 @@ export default function DashboardPage() {
     fetchSession();
   }, [router]);
 
+  const handleChatSelect = async (chatId: string) => {
+    setSelectedChatId(chatId);
+    setMessagesLoading(true);
+
+    try {
+      // Fetch chat details
+      const chatResponse = await fetch(`/api/chats/${chatId}`);
+      if (chatResponse.ok) {
+        const chatData = await chatResponse.json();
+        setSelectedChat(chatData.chat);
+      }
+
+      // Fetch messages
+      const messagesResponse = await fetch(`/api/chats/${chatId}/messages`);
+      if (messagesResponse.ok) {
+        const messagesData = await messagesResponse.json();
+        setChatMessages(messagesData.messages || []);
+      }
+    } catch (error) {
+      console.error("Failed to load chat:", error);
+      toast.error("Failed to load chat");
+    } finally {
+      setMessagesLoading(false);
+    }
+  };
+
+  const handleSendMessage = async (content: string, replyToId?: string) => {
+    if (!selectedChatId || !user) return;
+
+    try {
+      const response = await fetch("/api/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chatId: selectedChatId,
+          content,
+          replyToId,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Add the new message to the list
+        setChatMessages(prev => [...prev, data.message]);
+        setReplyTo(null);
+      } else {
+        toast.error("Failed to send message");
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error("Failed to send message");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -66,110 +184,72 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <h1 className="text-2xl font-bold">{t("title")}</h1>
-          <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-background flex">
+      {/* Sidebar */}
+      <div className={`${sidebarOpen ? "w-80" : "w-0"} transition-all duration-300 overflow-hidden border-r`}>
+        <div className="w-80 h-full flex flex-col">
+          {/* Sidebar Header */}
+          <div className="flex items-center justify-between p-4 border-b">
+            <h1 className="text-xl font-bold">MiniChat</h1>
             <div className="flex items-center gap-2">
-              {user.image && (
-                <img
-                  src={user.image}
-                  alt={user.name}
-                  className="h-8 w-8 rounded-full"
-                />
-              )}
-              <span className="text-sm font-medium">{user.name}</span>
+              <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(false)} className="md:hidden">
+                <Menu className="w-4 h-4" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={signout}>
+                <LogOut className="h-4 w-4" />
+              </Button>
             </div>
-            <Button variant="outline" size="sm" onClick={signout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              {t("signOut")}
+          </div>
+
+          {/* Chat List */}
+          <ChatList
+            selectedChatId={selectedChatId}
+            onChatSelect={handleChatSelect}
+          />
+        </div>
+      </div>
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {!sidebarOpen && (
+          <div className="p-4 border-b md:hidden">
+            <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(true)}>
+              <Menu className="w-4 h-4 mr-2" />
+              Open Sidebar
             </Button>
           </div>
-        </div>
-      </header>
+        )}
 
-      {/* Main Content */}
-      <main className="container px-4 py-8">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Welcome Card */}
-          <Card className="md:col-span-2 lg:col-span-3">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                {t("welcome.title")}
-              </CardTitle>
-              <CardDescription>
-                {t("welcome.description", { name: user.name })}
-              </CardDescription>
-            </CardHeader>
-          </Card>
+        {selectedChat ? (
+          <>
+            {/* Chat Header */}
+            <ChatHeader
+              chat={selectedChat}
+              isOnline={false} // TODO: Implement online status
+              lastSeen="2 hours ago" // TODO: Implement last seen
+            />
 
-          {/* Profile Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                {t("profile.title")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm font-medium">{t("profile.name")}</p>
-                <p className="text-sm text-muted-foreground">{user.name}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">{t("profile.email")}</p>
-                <p className="text-sm text-muted-foreground">{user.email}</p>
-              </div>
-              <Button variant="outline" className="w-full">
-                <Settings className="h-4 w-4 mr-2" />
-                {t("profile.edit")}
-              </Button>
-            </CardContent>
-          </Card>
+            {/* Chat Body */}
+            <ChatBody
+              messages={chatMessages}
+              currentUserId={user.id}
+              isLoading={messagesLoading}
+              hasMore={false} // TODO: Implement pagination
+              onLoadMore={() => {}} // TODO: Implement load more
+              typingUsers={[]} // TODO: Implement typing indicators
+            />
 
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("actions.title")}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start">
-                {t("actions.createProject")}
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                {t("actions.viewProjects")}
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                {t("actions.settings")}
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("stats.title")}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-sm">{t("stats.projects")}</span>
-                <span className="font-medium">0</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm">{t("stats.storage")}</span>
-                <span className="font-medium">0 MB</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm">{t("stats.members")}</span>
-                <span className="font-medium">1</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
+            {/* Chat Footer */}
+            <ChatFooter
+              onSendMessage={handleSendMessage}
+              replyTo={replyTo}
+              onCancelReply={() => setReplyTo(null)}
+            />
+          </>
+        ) : (
+          <EmptyChat />
+        )}
+      </div>
     </div>
   );
 }
