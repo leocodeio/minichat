@@ -16,24 +16,30 @@ datasource db {
 }
 
 model User {
-  id               String    @id
-  name             String
-  email            String
-  emailVerified    Boolean   @default(false)
-  image            String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @default(now()) @updatedAt
-  role             String?
-  phone            String?
-  phoneVerified    Boolean?
-  profileCompleted Boolean?
-  subscriptionId   String?
-  sessions         Session[]
-  accounts         Account[]
+   id        String   @id @default(cuid())
+   name             String
+   email            String
+   emailVerified    Boolean   @default(false)
+   image            String?
+   createdAt        DateTime  @default(now())
+   updatedAt        DateTime  @default(now()) @updatedAt
+   role             String?
+   phone            String?
+   phoneVerified    Boolean?
+   profileCompleted Boolean?
+   subscriptionId   String?
+   uniqueCode       String?   @unique(map: "user_unique_code")
+   sessions         Session[]
+   accounts         Account[]
+   sentMessages     Message[]
+   chatParticipants ChatParticipant[]
+   contacts         Contact[] @relation("UserContacts")
+   contactOf        Contact[] @relation("ContactUsers")
 
-  @@unique([email])
-  @@map("user")
-}
+   @@unique([email])
+   @@unique([uniqueCode], map: "user_unique_code_idx")
+   @@map("user")
+ }
 
 model Session {
   id        String   @id
@@ -70,12 +76,71 @@ model Account {
 }
 
 model Verification {
-  id         String   @id
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
+   id         String   @id
+   identifier String
+   value      String
+   expiresAt  DateTime
+   createdAt  DateTime @default(now())
+   updatedAt  DateTime @default(now()) @updatedAt
 
-  @@map("verification")
-}
+   @@map("verification")
+ }
+
+model Chat {
+   id            String   @id
+   isGroup       Boolean  @default(false)
+   name          String?
+   description   String?
+   createdAt     DateTime @default(now())
+   updatedAt     DateTime @default(now()) @updatedAt
+   lastMessageAt DateTime?
+   participants  ChatParticipant[]
+   messages      Message[]
+
+   @@map("chat")
+ }
+
+model ChatParticipant {
+   id     String @id
+   userId String
+   chatId String
+   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+   chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+   @@unique([userId, chatId])
+   @@map("chat_participant")
+ }
+
+model Message {
+   id        String   @id
+   content   String
+   senderId  String
+   chatId    String
+   status    String   @default("sent") // sent, delivered, read
+   type      String   @default("text") // text, image, file, etc.
+   replyToId String?
+   deletedAt DateTime?
+   createdAt DateTime @default(now())
+   updatedAt DateTime @default(now()) @updatedAt
+   sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+   chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+   replyTo   Message? @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+   replies   Message[] @relation("MessageReplies")
+
+   @@map("message")
+ }
+
+model Contact {
+   id        String   @id
+   userId    String
+   contactId String
+   status    String   @default("pending") // pending, accepted, blocked
+   nickname  String?
+   createdAt DateTime @default(now())
+   updatedAt DateTime @default(now()) @updatedAt
+   user      User     @relation("UserContacts", fields: [userId], references: [id], onDelete: Cascade)
+   contact   User     @relation("ContactUsers", fields: [contactId], references: [id], onDelete: Cascade)
+
+   @@unique([userId, contactId])
+   @@map("contact")
+ }
